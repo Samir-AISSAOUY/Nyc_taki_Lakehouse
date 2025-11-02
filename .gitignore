@@ -1,0 +1,65 @@
+# Data files
+data/raw/*.parquet
+data/raw/*.csv
+data/tableau_exports/
+
+# Docker volumes
+minio-data/
+postgres-data/
+airflow-logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Airflow
+airflow.db
+airflow.cfg
+unittests.cfg
+
+# Spark
+.spark-warehouse/
+spark-events/
+spark/jars/*.jar
+*.jar
+# Fichiers JAR spécifiques
+spark/jars/aws-java-sdk-bundle-1.12.367.jar
+
+# Environment
+.env
+.env.local
