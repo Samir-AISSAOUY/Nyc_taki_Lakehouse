@@ -1,18 +1,19 @@
-# 📥 Téléchargement des Données NYC Taxi
+# NYC Taxi Data Download
 
-## 🎯 Fichiers Requis
+## Required Files
 
-Le projet nécessite **13 fichiers** (~5 GB total) :
-- 12 fichiers Parquet mensuels (2023)
-- 1 fichier CSV zones lookup
+The project needs **13 files** (~5 GB total):
+
+* 12 monthly Parquet files (2023)
+* 1 CSV zone lookup file
 
 ---
 
-## 🔗 Méthode 1 : Liens Directs (Recommandé)
+## Method 1: Direct Links (Recommended)
 
-### Données Taxi 2023 (12 fichiers)
+### 2023 Taxi Data (12 files)
 
-**Clic droit → Enregistrer sous** dans le dossier `data/raw/`
+**Right-click → Save As** into the folder `data/raw/`
 
 1. [yellow_tripdata_2023-01.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-01.parquet) (~450 MB)
 2. [yellow_tripdata_2023-02.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-02.parquet) (~400 MB)
@@ -27,15 +28,15 @@ Le projet nécessite **13 fichiers** (~5 GB total) :
 11. [yellow_tripdata_2023-11.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-11.parquet) (~420 MB)
 12. [yellow_tripdata_2023-12.parquet](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-12.parquet) (~430 MB)
 
-### Zone Lookup (1 fichier)
+### Zone Lookup (1 file)
 
 13. [taxi_zone_lookup.csv](https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv) (~12 KB)
 
 ---
 
-## 📂 Structure Finale
+## Final Folder Structure
 
-Après téléchargement, votre dossier `data/raw/` doit contenir :
+After download, your `data/raw/` folder should look like this:
 
 ```
 data/raw/
@@ -54,19 +55,17 @@ data/raw/
 └── taxi_zone_lookup.csv
 ```
 
-**Total : 13 fichiers (~5 GB)**
+**Total: 13 files (~5 GB)**
 
 ---
 
-## 🖥️ Méthode 2 : Ligne de Commande
+## Method 2: Command Line
 
 ### Windows (PowerShell)
 
 ```powershell
-# Créer le dossier
 New-Item -ItemType Directory -Path "data/raw" -Force
 
-# Télécharger tous les fichiers
 $base = "https://d37ci6vzurychx.cloudfront.net/trip-data"
 1..12 | ForEach-Object {
     $month = $_.ToString("00")
@@ -75,142 +74,137 @@ $base = "https://d37ci6vzurychx.cloudfront.net/trip-data"
     Invoke-WebRequest -Uri "$base/$file" -OutFile "data/raw/$file"
 }
 
-# Zone lookup
 Invoke-WebRequest -Uri "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv" -OutFile "data/raw/taxi_zone_lookup.csv"
 ```
 
 ### Linux / macOS
 
 ```bash
-# Créer le dossier
 mkdir -p data/raw
 
-# Télécharger tous les fichiers
 for i in {01..12}; do
     echo "Downloading yellow_tripdata_2023-$i.parquet..."
     wget -P data/raw "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-$i.parquet"
 done
 
-# Zone lookup
 wget -P data/raw "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
 ```
 
-### Avec cURL (multi-plateforme)
+### Using cURL (cross-platform)
 
 ```bash
-# Créer le dossier
 mkdir -p data/raw
 
-# Télécharger
 for month in 01 02 03 04 05 06 07 08 09 10 11 12; do
     curl -o "data/raw/yellow_tripdata_2023-$month.parquet" \
          "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-$month.parquet"
 done
 
-# Zone lookup
 curl -o "data/raw/taxi_zone_lookup.csv" \
      "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
 ```
 
 ---
 
-## 🔍 Vérification
+## Verification
 
-### Compter les fichiers
+### Count files
 
-**Windows :**
+**Windows:**
+
 ```powershell
 (Get-ChildItem data/raw).Count
-# Doit retourner: 13
+# Should return: 13
 ```
 
-**Linux/macOS :**
+**Linux/macOS:**
+
 ```bash
 ls data/raw | wc -l
-# Doit retourner: 13
+# Should return: 13
 ```
 
-### Vérifier la taille totale
+### Check total size
 
-**Windows :**
+**Windows:**
+
 ```powershell
 $size = (Get-ChildItem data/raw -Recurse | Measure-Object -Property Length -Sum).Sum / 1GB
 Write-Host "Total: $([math]::Round($size, 2)) GB"
 ```
 
-**Linux/macOS :**
+**Linux/macOS:**
+
 ```bash
 du -sh data/raw
-# Doit afficher: ~5.0G
+# Should show: ~5.0G
 ```
 
 ---
 
-## 🚀 Après le Téléchargement
+## After Download
 
-Une fois les 13 fichiers téléchargés :
+Once all 13 files are downloaded:
 
 ```bash
-# Démarrer l'infrastructure
 docker compose up -d
-
-# Attendre 2 minutes
 sleep 120
-
-# Lancer le pipeline
 docker exec airflow airflow dags trigger nyc_taxi_lakehouse
 ```
 
 ---
 
-## 📚 Source des Données
+## Data Source
 
 **NYC Taxi & Limousine Commission (TLC)**
-- Site officiel : https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-- Licence : Données publiques
-- Format : Parquet (Apache)
-- Période : Janvier - Décembre 2023
+
+* Official site: [https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+* License: Public data
+* Format: Parquet (Apache)
+* Period: January–December 2023
 
 ---
 
-## ⚠️ Notes Importantes
+## Important Notes
 
-1. **Taille** : Les fichiers sont volumineux (~5 GB total). Assurez-vous d'avoir :
-   - Connexion Internet stable
-   - Espace disque suffisant (50 GB recommandé)
+1. **Size:** Large files (~5 GB total). Make sure you have:
 
-2. **Durée** : Le téléchargement peut prendre 20-60 minutes selon votre connexion
+   * Stable internet connection
+   * Enough disk space (50 GB recommended)
 
-3. **Gitignore** : Les fichiers .parquet sont exclus du repository Git (trop volumineux)
+2. **Time:** Downloads can take 20–60 minutes depending on your connection.
 
-4. **Alternative** : Si les téléchargements échouent, essayez :
-   - Un gestionnaire de téléchargement (IDM, Free Download Manager)
-   - Télécharger un fichier à la fois
-   - Utiliser un VPN si les URLs sont bloquées
+3. **Gitignore:** `.parquet` files are excluded from Git repositories.
+
+4. **If downloads fail:**
+
+   * Use a download manager (IDM, Free Download Manager)
+   * Download one file at a time
+   * Use a VPN if URLs are blocked
 
 ---
 
-## 🆘 Problèmes Fréquents
+## Common Issues
 
-### Erreur : "Connection timeout"
+### "Connection timeout"
 
-**Solution :** Augmenter le timeout
+**Fix:**
+
 ```powershell
 Invoke-WebRequest -Uri $url -OutFile $file -TimeoutSec 600
 ```
 
-### Erreur : "Access denied"
+### "Access denied"
 
-**Solution :** Vérifier que les URLs sont correctes ou utiliser un VPN
+**Fix:** Check URLs or use a VPN.
 
-### Fichiers corrompus
+### Corrupted files
 
-**Solution :** Retélécharger le fichier spécifique
+**Fix:**
+
 ```powershell
 Remove-Item data/raw/yellow_tripdata_2023-XX.parquet
 Invoke-WebRequest -Uri $url -OutFile data/raw/yellow_tripdata_2023-XX.parquet
 ```
 
 ---
-
-**Bon téléchargement ! 📥**
