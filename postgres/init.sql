@@ -1,5 +1,5 @@
 -- PostgreSQL initialization script for NYC Taxi Lakehouse
--- Creates databases and tables needed for the project
+-- Creates databases and tables needed
 
 -- Create Airflow database
 CREATE DATABASE airflow;
