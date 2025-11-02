@@ -188,9 +188,6 @@ docker compose down -v
 - Setup Guide: docs/setup_guide.md
 - Tableau Guide: docs/tableau_dashboard_guide.md
 
-## License
-
-MIT License
 
 ## Author
 
