@@ -1,0 +1,203 @@
+version: '3.8'
+
+networks:
+  lakehouse:
+    driver: bridge
+
+volumes:
+  minio-data:
+  postgres-data:
+  airflow-logs:
+
+services:
+  # MinIO - S3 Compatible Storage
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: minio
+    hostname: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio12345
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - lakehouse
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # MinIO Init - Create Buckets
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Initializing MinIO buckets...';
+      sleep 5;
+      mc alias set local http://minio:9000 minio minio12345;
+      mc mb -p local/lake || echo 'Bucket lake exists';
+      echo 'ok' > /tmp/.keep;
+      mc cp /tmp/.keep local/lake/spark-events/.keep || true;
+      mc cp /tmp/.keep local/lake/bronze/.keep || true;
+      mc cp /tmp/.keep local/lake/silver/.keep || true;
+      mc cp /tmp/.keep local/lake/gold/.keep || true;
+      mc cp /tmp/.keep local/lake/analytics/.keep || true;
+      echo 'MinIO initialized';
+      exit 0"
+    networks:
+      - lakehouse
+
+  # PostgreSQL - Metadata Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - lakehouse
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spark Master
+  spark-master:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    image: lakehouse-spark:latest
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+    command: >
+      bash -c "
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master 
+      --host spark-master --port 7077 --webui-port 8080"
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+      - "4040:4040"
+    volumes:
+      - ./jobs:/opt/jobs:ro
+      - ./scripts:/opt/scripts:ro
+      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - ./data:/data
+    depends_on:
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    networks:
+      - lakehouse
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Spark Worker
+  spark-worker:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    image: lakehouse-spark:latest
+    container_name: spark-worker
+    hostname: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_PORT=8881
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - PYSPARK_PYTHON=python3
+    command: >
+      bash -c "
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker 
+      spark://spark-master:7077"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./jobs:/opt/jobs:ro
+      - ./scripts:/opt/scripts:ro
+      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - ./data:/data
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    networks:
+      - lakehouse
+
+  # Airflow - Workflow Orchestration
+  airflow:
+    image: apache/airflow:2.9.2-python3.11
+    container_name: airflow
+    hostname: airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      spark-master:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+      AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      _AIRFLOW_WWW_USER_FIRSTNAME: Admin
+      _AIRFLOW_WWW_USER_LASTNAME: User
+      _AIRFLOW_WWW_USER_EMAIL: admin@example.com
+      _AIRFLOW_WWW_USER_ROLE: Admin
+    user: "0:0"
+    command: >
+      bash -c "
+        echo 'Starting Airflow...';
+        airflow db migrate;
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com 2>/dev/null || true;
+        echo 'Airflow initialized';
+        airflow webserver -p 8080 &
+        exec airflow scheduler"
+    ports:
+      - "8088:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./scripts:/opt/scripts:ro
+      - airflow-logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - lakehouse
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
