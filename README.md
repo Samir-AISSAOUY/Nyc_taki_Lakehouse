@@ -1,4 +1,4 @@
-# Lakehouse NYC Taxi - Data Engineering + Analytics
+# Lakehouse NYC Taxi - Data Engineering + Analytics (Tableau)
 
 ![1__doMZNKaOaDPo6qWojbxZw](https://github.com/user-attachments/assets/6ad43a64-4e68-4322-b983-a38a01999be0)
 
