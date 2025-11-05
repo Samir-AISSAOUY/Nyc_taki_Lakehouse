@@ -288,4 +288,4 @@ This setup is designed for local development and learning purposes:
 2. No encryption is implemented for data at rest
 3. Services are not hardened for production use
 
-If deploying to a shared environment, ensure you implement proper security measures.
+If deploying to a shared environment, ensure you implement proper security measures!!!
