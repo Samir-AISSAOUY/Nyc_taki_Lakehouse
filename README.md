@@ -191,6 +191,6 @@ docker compose down -v
 
 ## Author
 
-Samir SC
-- GitHub: [@your-username]
-- LinkedIn: [your-profile]
+Samir AISSAOUY
+- GitHub: [@Samir-AISSAOUY]
+- LinkedIn: [(https://www.linkedin.com/in/samir-el-aissaouy/)]
