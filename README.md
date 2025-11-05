@@ -9,19 +9,7 @@ Complete data pipeline from raw data ingestion to Tableau dashboards.
 Pipeline for processing 50M+ NYC taxi trip records using Medallion architecture (Bronze → Silver → Gold → Analytics).
 
 ## Architecture
-```
-Raw Data (Parquet)
-    ↓
-Bronze Layer (Raw ingestion)
-    ↓
-Silver Layer (Cleaning + Enrichment)
-    ↓
-Gold Layer (Business aggregations)
-    ↓
-Analytics Layer (KPIs + Exports)
-    ↓
-Tableau Dashboard
-```
+
 
 ## Tech Stack
 
