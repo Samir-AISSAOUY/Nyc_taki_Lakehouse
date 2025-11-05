@@ -192,5 +192,5 @@ docker compose down -v
 ## Author
 
 Samir AISSAOUY
-- GitHub: [@Samir-AISSAOUY]
-- LinkedIn: [(https://www.linkedin.com/in/samir-el-aissaouy/)]
+email: elaissaouy.samir12@gmail.com
+LinkedIn: https://www.linkedin.com/in/samir-el-aissaouy/
