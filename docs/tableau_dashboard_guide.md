@@ -1,6 +1,4 @@
-# Complete Tableau Desktop Guide - NYC Taxi Dashboard
-
-This guide will walk you through all necessary steps to create a professional Tableau dashboard for analyzing NYC taxi data.
+# Tableau Public Guide-NYC Taxi Dashboard (In building) 
 
 ## Data Preparation
 
