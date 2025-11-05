@@ -535,4 +535,4 @@ To take your dashboard further:
 4. **Explore geo-mapping**: If you have precise coordinates, create interactive maps
 5. **Set up automatic refresh** if your pipeline is scheduled
 
-This detailed guide will help you create a professional and impressive Tableau dashboard for analyzing NYC taxi data.
+Let's talk to data now ^^
