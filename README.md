@@ -1,6 +1,6 @@
 # Lakehouse NYC Taxi - Data Engineering + Analytics (Tableau)
 
-<img src="docs/Imagees/Nyk Taxi Yellow_Nyk_Taxi.png" width="500" alt="NYC Taxi">
+<img src="docs/Imagees/Yellow_Nyk_Taxi.png" width="500" alt="NYC Taxi">
 
 Complete data pipeline from raw data ingestion to Tableau dashboards.
 
