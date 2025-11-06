@@ -120,7 +120,6 @@ lakehouse-nyc-taxi/
 - Output: 32M records
 
 ### Quality Check (3 min)
-- 8 automated tests
 - Data validation
 
 ### Gold Layer (5 min)
