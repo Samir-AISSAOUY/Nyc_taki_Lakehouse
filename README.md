@@ -10,6 +10,8 @@ Pipeline for processing 50M+ NYC taxi trip records using Medallion architecture 
 
 ## Architecture
 <img src="docs/Imagees/Nyk Taxi Architecture1.png" width="900" alt="Architecture NYC Taxi">
+
+
 ## Tech Stack
 
 - Python 3.11 + PySpark 3.5.1
