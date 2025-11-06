@@ -6,7 +6,7 @@ Complete data pipeline from raw data ingestion to Tableau dashboards.
 
 ## Overview
 
-Pipeline for processing 50M+ NYC taxi trip records using Medallion architecture (Bronze → Silver → Gold → Analytics).
+Pipeline for processing 50M+ NYC taxi trip records using Medallion architecture (Bronze → Silver → Gold → Analytics). 
 
 ## Architecture
 <img src="docs/Imagees/Nyk Taxi Architecture1.png" width="900" alt="Architecture NYC Taxi">
